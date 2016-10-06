@@ -2,17 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Document</title>    
 </head>
 <body>
 <script>
   window.fbAsyncInit = function() {
     FB.init({
-      appId      : 'your-app-id',
+      appId      : '131613223561516',
       xfbml      : true,
       version    : 'v2.8'
     });
     FB.AppEvents.logPageView();
+
+    FB.getLoginStatus(function(response) {
+    if (response.status === 'connected') {
+        console.log(response);
+        FB.api('/me/photos?type=uploaded', (res) => {
+            pics = "";
+            res.data.forEach(r => {                
+                pics += `<img src='https://graph.facebook.com/${r.id}/picture?type=normal&access_token=${response.authResponse.accessToken}' /> `;
+                
+            })
+            document.getElementById('app').innerHTML = pics
+        });
+    }
+    else {
+        FB.login();
+    }
+    });
+
   };
 
   (function(d, s, id){
@@ -23,15 +41,9 @@
      fjs.parentNode.insertBefore(js, fjs);
    }(document, 'script', 'facebook-jssdk'));
 
-   FB.getLoginStatus(function(response) {
-    if (response.status === 'connected') {
-        console.log('Logged in.');
-    }
-    else {
-        FB.login();
-    }
-   });
+   
 
 </script>
+<div id="app"></div>
 </body>
 </html>
