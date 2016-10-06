@@ -6,6 +6,7 @@
 </head>
 <body>
 <script>
+  
   window.fbAsyncInit = function() {
     FB.init({
       appId      : '131613223561516',
@@ -13,18 +14,45 @@
       version    : 'v2.8'
     });
     FB.AppEvents.logPageView();
-
+    
     FB.getLoginStatus(function(response) {
     if (response.status === 'connected') {
         console.log(response);
-        FB.api('/me/photos?type=uploaded', (res) => {
-            pics = "";
+
+        const processVid = (r) => {
+            FB.api(`/${r.id}?&access_token=${response.authResponse.accessToken}&fields=embed_html`, res =>{                    
+                vids += res.embed_html;
+                document.getElementById('vids').innerHTML = vids
+            }) 
+        }
+        const processPhotos = (res) =>{
+            let pics="";            
             res.data.forEach(r => {                
                 pics += `<img src='https://graph.facebook.com/${r.id}/picture?type=normal&access_token=${response.authResponse.accessToken}' /> `;
-                
+                    
             })
-            document.getElementById('app').innerHTML = pics
+            document.getElementById('app').innerHTML = pics  
+        }
+
+        const processVideos = (res) => {
+            vids = "";
+            res.data.forEach(r => {                
+                processVid(r)                            
+            })
+        }
+
+
+        FB.api(`/me/photos?type=uploaded`, (res) => {
+            processPhotos(res)          
         });
+        
+        FB.api(`/me/videos?type=uploaded`, (res) => {                                
+            processVideos(res)
+        });      
+
+        FB.api(`/me/taggable_friends `, res => {
+            console.log('test',res)
+        })  
     }
     else {
         FB.login();
@@ -39,11 +67,14 @@
      js = d.createElement(s); js.id = id;
      js.src = "//connect.facebook.net/en_US/sdk.js";
      fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
+   }(document, 'script', 'facebook-jssdk'));   
 
-   
-
+   function reload(){
+        window.location.href=window.location
+   }
 </script>
+<div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="true" onlogin=reload()></div>
 <div id="app"></div>
+<div id="vids"></div>
 </body>
 </html>
